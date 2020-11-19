@@ -8,22 +8,42 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using RazorPagesMovie.Data;
 
 namespace MVC
 {
     public class Startup
-    {
-        public Startup(IConfiguration configuration)
+    {   //insert web hosting
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
+            Environment = env;
             Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
+        //added hosting environment
+        public IWebHostEnvironment Environment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            //services.AddControllersWithViews();
+            services.AddRazorPages();
+            //adds the movie context from database
+         
+            if (Environment.IsDevelopment())
+            {
+                services.AddDbContext<RazorPagesMovieContext>(options =>
+                options.UseSqlite(
+                    Configuration.GetConnectionString("RazorPagesMovieContext")));
+            }
+            else
+            {
+                services.AddDbContext<RazorPagesMovieContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("MovieContext")));
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -32,6 +52,7 @@ namespace MVC
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                
             }
             else
             {
